@@ -145,18 +145,14 @@ function doActionWithTemperature(action, deviceId, city, temperature, range, use
           await doAction(action, deviceId, userResponse);
           return;
         }
-
         prepareTimeout(...arguments, realTemp);
-
 
       } else if (range === "above") {
         if (realTemp > temperature) {
           await doAction(action, deviceId, userResponse);
           return;
         }
-
         prepareTimeout(...arguments, realTemp);
-
       }
       console.log(userResponse.message);
 
