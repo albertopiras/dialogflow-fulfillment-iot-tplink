@@ -1,4 +1,4 @@
-var _ = require('lodash');
+const _ = require('lodash');
 const { WebhookClient, Payload, Card, Suggestion, Text } = require('dialogflow-fulfillment');
 const { login } = require("tplink-cloud-api");
 const https = require('https');
@@ -7,9 +7,12 @@ var tplink, deviceList;
 
 var mainInterval;
 
-/**Checks the TpLink device connection
- * @return an object with result:boolean and err_message:string
- */
+var conf = sails.config;
+
+// console.log("---->" + conf.custom.interval_value);
+
+/** Checks the TpLink device connection
+*/
 async function checkTplinkDevices(response) {
   let tplinkLogin = false;
   let tplinkDevices = false;
@@ -164,7 +167,7 @@ function doActionWithTemperature(action, deviceId, city, temperature, range, use
     if (res.main && res.main.temp) {
       const realTemp = parseInt(res.main.temp);
 
-      console.log('weather temp response ' + realTemp + 'and comparison temp is ' + temperature);
+      console.log('weather temp response is ' + realTemp + ' and comparison temp is ' + temperature);
 
       if (range === "under") {
         if (realTemp < temperature) {
@@ -173,11 +176,10 @@ function doActionWithTemperature(action, deviceId, city, temperature, range, use
         }
 
         if (!mainInterval) {
-          userResponse.message = `Temperature in ${city} is now under ${temperature} degrees.`;
-          userResponse.message = `Timer activated.`;
+          userResponse.message = `The action will be performed when temperature in ${city} will be under ${temperature} degrees (now it is ${realTemp}). \ Timer activated`;
           mainInterval = setInterval(() => {
             doActionWithTemperature(... arguments);
-          }, 1000*60*5);
+          }, conf.custom.interval_value);
 
         }
 
@@ -188,15 +190,15 @@ function doActionWithTemperature(action, deviceId, city, temperature, range, use
         }
 
         if (!mainInterval) {
-          userResponse.message = `Temperature in ${city} is now under ${temperature} degrees.`;
-          userResponse.message = `Timer activated.`;
+          userResponse.message = `The action will be performed when temperature in ${city} will be above ${temperature} degrees (now it is ${realTemp}). \ Timer activated`;
           mainInterval = setInterval(() => {
 
             doActionWithTemperature(... arguments);
-          }, 1000*60*5);
+          }, conf.custom.interval_value);
         }
 
       }
+      console.log(userResponse.message);
 
       return;
     } throw "weather call error : "+  JSON.stringify(res);

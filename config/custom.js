@@ -20,4 +20,10 @@ module.exports.custom = {
   // stripeSecret: 'sk_test_Zzd814nldl91104qor5911gjald',
   // …
 
+    tp_link_credentials: {
+      username: "",
+      password: ""
+    },
+    interval_value: 1000 * 60 * 5 // minutes
+
 };
