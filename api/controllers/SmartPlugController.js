@@ -2,14 +2,11 @@ const _ = require('lodash');
 const { WebhookClient, Payload, Card, Suggestion, Text } = require('dialogflow-fulfillment');
 const { login } = require("tplink-cloud-api");
 const https = require('https');
+const conf = sails.config;
 
 var tplink, deviceList;
+var mainTimeout;
 
-var mainInterval;
-
-var conf = sails.config;
-
-// console.log("---->" + conf.custom.interval_value);
 
 /** Checks the TpLink device connection
 */
@@ -19,7 +16,7 @@ async function checkTplinkDevices(response) {
 
   if (!tplink) {
     try {
-      tplink = await login("albe45313@gmail.com", "bellazio91");
+      tplink = await login(conf.custom.tp_link_credentials.username, conf.custom.tp_link_credentials.password);
       tplinkLogin = true;
     } catch (err) {
       console.log('ERRORE tplink ' + err);
@@ -45,9 +42,9 @@ async function checkTplinkDevices(response) {
 
 async function doAction(action, deviceId, response) {
   try {
-    if (mainInterval) {
-      console.log(' ---- Clear Interval ----');
-      clearInterval(mainInterval);
+    if (mainTimeout) {
+      console.log(' ---- Clear Timeout ----');
+      clearTimeout(mainTimeout);
     }
     if (action === "on") {
       console.log('ON ' + action);
@@ -107,43 +104,6 @@ module.exports = {
       const city = agent.parameters.city;
       const range = agent.parameters.range;
 
-
-      // await requestTemperatureByCity(city).then(async function (res) {
-      //   if (res.main && res.main.temp) {
-      //     const realTemp = parseInt(res.main.temp);
-
-      //     console.log('weather temp res ' + realTemp);
-
-      //     if (range === "under") {
-      //       if (realTemp < temperature) {
-      //         await doAction(action, deviceId, userResponse);
-      //         return;
-      //       }
-
-
-      //       userResponse.message = `Temperature in ${city} is now under ${temperature} degrees.`;
-      //       userResponse.message = `Timer activated.`;
-
-
-      //     } else if (range === "above") {
-      //       if (realTemp >= temperature) {
-      //         await doAction(action, deviceId, userResponse);
-      //         return;
-      //       }
-
-
-      //       userResponse.message = `Temperature in ${city} is now under ${temperature} degrees.`;
-      //       userResponse.message = `Timer activated.`;
-
-      //     }
-
-      //     return;
-      //   } throw "weather call error";
-
-      // }).catch(function (err) {
-      //   userResponse.message = `Error retrieving current city temperature - try again or permorm simple action like: start device 'your device name'`;
-      // });
-
       await doActionWithTemperature(action, deviceId, city, temperature, range, userResponse);
 
       agent.add(userResponse.message);
@@ -160,10 +120,21 @@ module.exports = {
 
 };
 
+function prepareTimeout(action, deviceId, city, temperature, range, userResponse, currentTemp) {
+  if (mainTimeout) {
+    clearTimeout(mainTimeout);
+  }
+  userResponse.message = `The action will be performed when temperature in ${city} will be ${range} ${temperature} degrees (now it is ${currentTemp}). \ Timer activated`;
+  mainTimeout = setTimeout(() => {
+    doActionWithTemperature(action, deviceId, city, temperature, range, userResponse);
+  }, conf.custom.interval_value);
+
+}
 
 function doActionWithTemperature(action, deviceId, city, temperature, range, userResponse) {
+  console.log(arguments);
 
-  return requestTemperatureByCity(city).then(async (res) =>{
+  return requestTemperatureByCity(city).then(async (res) => {
     if (res.main && res.main.temp) {
       const realTemp = parseInt(res.main.temp);
 
@@ -175,13 +146,8 @@ function doActionWithTemperature(action, deviceId, city, temperature, range, use
           return;
         }
 
-        if (!mainInterval) {
-          userResponse.message = `The action will be performed when temperature in ${city} will be under ${temperature} degrees (now it is ${realTemp}). \ Timer activated`;
-          mainInterval = setInterval(() => {
-            doActionWithTemperature(... arguments);
-          }, conf.custom.interval_value);
+        prepareTimeout(...arguments, realTemp);
 
-        }
 
       } else if (range === "above") {
         if (realTemp > temperature) {
@@ -189,19 +155,13 @@ function doActionWithTemperature(action, deviceId, city, temperature, range, use
           return;
         }
 
-        if (!mainInterval) {
-          userResponse.message = `The action will be performed when temperature in ${city} will be above ${temperature} degrees (now it is ${realTemp}). \ Timer activated`;
-          mainInterval = setInterval(() => {
-
-            doActionWithTemperature(... arguments);
-          }, conf.custom.interval_value);
-        }
+        prepareTimeout(...arguments, realTemp);
 
       }
       console.log(userResponse.message);
 
       return;
-    } throw "weather call error : "+  JSON.stringify(res);
+    } throw "weather call error : " + JSON.stringify(res);
 
   }).catch(function (err) {
     console.log("Error " + err);
@@ -212,7 +172,7 @@ function doActionWithTemperature(action, deviceId, city, temperature, range, use
 
 function requestTemperatureByCity(cityName) {
   console.log('requestTemperatureByCity ' + cityName);
-  var url = `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&units=metric&appid=c519f8f1270e6208a000fd23fd73460c`
+  var url = `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&units=metric&appid=${conf.custom.openweather_api_key}`
   console.log(cityName);
 
   return new Promise(function (resolve, reject) {
