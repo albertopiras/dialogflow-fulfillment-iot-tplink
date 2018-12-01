@@ -29,7 +29,7 @@ async function checkTplinkDevices(response) {
       deviceList = await tplink.getDeviceList();
       tplinkDevices = true;
     } catch (err) {
-      console.log('ERRORE tplink' + err);
+      console.log('ERRORE tplink ' + err);
       response.message = response.message.concat(`Error - TpLink device list.`);
     }
   }
@@ -55,7 +55,7 @@ async function doAction(action, deviceId, response) {
     }
     response.message = `Action successfully performed`;
   } catch (err) {
-    console.log('ERRORE tplink' + err);
+    console.log('ERRORE tplink action' + err);
     response.message = `Error performing action ${action} on device ${deviceId}`;
   }
 
@@ -69,7 +69,7 @@ module.exports = {
 
     var userResponse = {
       message: ""
-    }
+    };
 
     async function DeviceActivation(agent) {
       console.log('Intent: DeviceActivation --- \n');
@@ -77,7 +77,7 @@ module.exports = {
       var tpLinkConnected = await checkTplinkDevices(userResponse);
       if (!tpLinkConnected) {
         agent.add(userResponse.message);
-        return
+        return;
       }
 
       let action = agent.parameters.action;
@@ -95,7 +95,7 @@ module.exports = {
       var tpLinkConnected = await checkTplinkDevices(userResponse);
       if (!tpLinkConnected) {
         agent.add(userResponse.message);
-        return
+        return;
       }
 
       const action = agent.parameters.action;
@@ -168,7 +168,7 @@ function doActionWithTemperature(action, deviceId, city, temperature, range, use
 
 function requestTemperatureByCity(cityName) {
   console.log('requestTemperatureByCity ' + cityName);
-  var url = `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&units=metric&appid=${conf.custom.openweather_api_key}`
+  var url = `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&units=metric&appid=${conf.custom.openweather_api_key}`;
   console.log(cityName);
 
   return new Promise(function (resolve, reject) {
@@ -182,7 +182,7 @@ function requestTemperatureByCity(cityName) {
       });
     }).on("error", (err) => {
       console.log("Weather Error: " + err.message);
-      reject("Weather Error: " + err.message)
+      reject("Weather Error: " + err.message);
     });
   });
 
