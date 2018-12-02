@@ -13,7 +13,7 @@ There are basically two kinds of interactions available:
 Usage example:
 
 - **Start** the **warming system**.
-**Stop** the **cooling fan**
+- **Stop** the **cooling fan**
 - **Start** the **space heather** if the temperature in **Berlin** is **below** **10 degrees**.
 
 
@@ -35,8 +35,7 @@ In this last case, if the condition is not valid, the system will start a contro
     * Sign up for or sign into Dialogflow and create a agent
     * Go to your agent's settings and Restore from zip using the dialogflow-agent.zip in this directory (Note: this will overwrite your existing agent)
     * Open the file config/custom.js of this project.
-        set the api key for openweater api
-        set your user&pwd of your tp-link account
+        set your Openweater APIKEY and your user&pwd of your tp-link account.
     * Deploy the SailsJS app with a provider like heroku.
     * Then go to fulfillment and insert the following Webhook URL: `https://yourapp.herokuapp.com/api/smarthome`
     * now try the app with an input like "Start the space heater".
