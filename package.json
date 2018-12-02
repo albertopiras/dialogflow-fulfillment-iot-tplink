@@ -1,11 +1,12 @@
 {
-  "name": "dialogflow-webhook-bmw-models-sailsjs",
+  "name": "dialogflow-fulfillment-iot-tplink",
   "private": true,
   "version": "0.0.0",
-  "description": "Webhook & sailsJS example",
+  "description": "Iot Webhook example",
   "keywords": [
     "dialogflow",
-    "api.ai"
+    "api.ai",
+    "tplink"
   ],
   "dependencies": {
     "@sailshq/connect-redis": "^3.2.1",
@@ -38,7 +39,7 @@
   "main": "app.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/albertopiras/dialogflow-webhook-bmw-models-sailsjs.git"
+    "url": "https://github.com/albertopiras/dialogflow-fulfillment-iot-tplink.git"
   },
   "author": "Alberto Piras a.piras.ict@gmail.com",
   "license": "",
