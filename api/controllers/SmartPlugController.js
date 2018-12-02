@@ -7,60 +7,6 @@ const conf = sails.config;
 var tplink, deviceList;
 var mainTimeout;
 
-
-/** Checks the TpLink device connection
-*/
-async function checkTplinkDevices(response) {
-  let tplinkLogin = false;
-  let tplinkDevices = false;
-
-  if (!tplink) {
-    try {
-      tplink = await login(conf.custom.tp_link_credentials.username, conf.custom.tp_link_credentials.password);
-      tplinkLogin = true;
-    } catch (err) {
-      console.log('ERRORE tplink ' + err);
-      response.message = `Error - TpLink credentials.`;
-    }
-  }
-
-  if (tplinkLogin && !deviceList) {
-    try {
-      deviceList = await tplink.getDeviceList();
-      tplinkDevices = true;
-    } catch (err) {
-      console.log('ERRORE tplink ' + err);
-      response.message = response.message.concat(`Error - TpLink device list.`);
-    }
-  }
-
-  // if  tplink && deviceList are already instantiated return true
-  return tplink && deviceList ? true : tplinkLogin && tplinkDevices;
-
-}
-
-
-async function doAction(action, deviceId, response) {
-  try {
-    if (mainTimeout) {
-      console.log(' ---- Clear Timeout ----');
-      clearTimeout(mainTimeout);
-    }
-    if (action === "on") {
-      console.log('ON ' + action);
-      await tplink.getHS100(deviceId).powerOn();
-    } else if (action === "off") {
-      console.log('OFF ' + action);
-      await tplink.getHS100(deviceId).powerOff();
-    }
-    response.message = `Action successfully performed`;
-  } catch (err) {
-    console.log('ERRORE tplink action' + err);
-    response.message = `Error performing action ${action} on device ${deviceId}`;
-  }
-
-}
-
 module.exports = {
 
   smarthome: async function (request, response) {
@@ -87,7 +33,6 @@ module.exports = {
       agent.add(userResponse.message);
 
     }
-
 
     async function DeviceProgramming(agent) {
       console.log('Intent: DeviceProgramming --- \n');
@@ -120,6 +65,70 @@ module.exports = {
 
 };
 
+
+/** 
+ * Checks the TpLink device connection
+ * @param  response 
+*/
+async function checkTplinkDevices(response) {
+  let tplinkLogin = false;
+  let tplinkDevices = false;
+
+  if (!tplink) {
+    try {
+      tplink = await login(conf.custom.tp_link_credentials.username, conf.custom.tp_link_credentials.password);
+      tplinkLogin = true;
+    } catch (err) {
+      console.log('Error - tplink login: ' + err);
+      response.message = `Error - TpLink credentials.`;
+    }
+  }
+
+  if (tplinkLogin && !deviceList) {
+    try {
+      deviceList = await tplink.getDeviceList();
+      tplinkDevices = true;
+    } catch (err) {
+      console.log('Error - tplink devicelist: ' + err);
+      response.message = response.message.concat(`Error - TpLink device list.`);
+    }
+  }
+
+  // if  tplink && deviceList are already instantiated return true
+  return tplink && deviceList ? true : tplinkLogin && tplinkDevices;
+
+}
+
+/**
+ * Executes a specific action on a device
+ * @param  action 
+ * @param  deviceId 
+ * @param  response 
+ */
+async function doAction(action, deviceId, response) {
+  try {
+    if (mainTimeout) {
+      console.log(' ---- Clear Timeout ----');
+      clearTimeout(mainTimeout);
+    }
+    if (action === "on") {
+      console.log('ON ' + action);
+      await tplink.getHS100(deviceId).powerOn();
+    } else if (action === "off") {
+      console.log('OFF ' + action);
+      await tplink.getHS100(deviceId).powerOff();
+    }
+    response.message = `Action successfully performed`;
+  } catch (err) {
+    console.log('Error - tplink action' + err);
+    response.message = `Error performing action ${action} on device ${deviceId}`;
+  }
+
+}
+
+/** 
+ * It Programs an action with temperature control
+ */
 function prepareTimeout(action, deviceId, city, temperature, range, userResponse, currentTemp) {
   if (mainTimeout) {
     clearTimeout(mainTimeout);
@@ -131,13 +140,16 @@ function prepareTimeout(action, deviceId, city, temperature, range, userResponse
 
 }
 
+/**
+ *  It Performs an action if conditions are satisfied
+ *  Conditions: if the temperature in a specific city sotisfies the condition 
+ */
 function doActionWithTemperature(action, deviceId, city, temperature, range, userResponse) {
   console.log(arguments);
 
   return requestTemperatureByCity(city).then(async (res) => {
     if (res.main && res.main.temp) {
       const realTemp = parseInt(res.main.temp);
-
       console.log('weather temp response is ' + realTemp + ' and comparison temp is ' + temperature);
 
       if (range === "under") {
@@ -155,7 +167,6 @@ function doActionWithTemperature(action, deviceId, city, temperature, range, use
         prepareTimeout(...arguments, realTemp);
       }
       console.log(userResponse.message);
-
       return;
     } throw "weather call error : " + JSON.stringify(res);
 
@@ -165,7 +176,11 @@ function doActionWithTemperature(action, deviceId, city, temperature, range, use
   });
 }
 
-
+/**
+ * It retrieves the temperature into the specified city
+ * @param cityName 
+ * @returns Promise
+ */
 function requestTemperatureByCity(cityName) {
   console.log('requestTemperatureByCity ' + cityName);
   var url = `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&units=metric&appid=${conf.custom.openweather_api_key}`;
@@ -185,6 +200,5 @@ function requestTemperatureByCity(cityName) {
       reject("Weather Error: " + err.message);
     });
   });
-
 
 }
