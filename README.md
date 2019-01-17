@@ -88,6 +88,9 @@ As you probably already know you have to enable Web & App Activity, Device Infor
 
 Then you also have to be sure that the language of your agent is the same used by your Google assistant.
 
+Then start the Assistant and say "talk to my test app", this will open your app. More info in [docs]
+
+
 And BUMM! Now you can try your app on your device ❤	
 
 ## License
@@ -100,6 +103,8 @@ MIT
 [dialogflow-fulfillment]: <https://github.com/dialogflow/dialogflow-fulfillment-nodejs>
 [Activity controls page]:
 <https://myaccount.google.com/u/1/activitycontrols>
+[docs]:
+<https://dialogflow.com/docs/integrations/google-assistant>
 
 
 
