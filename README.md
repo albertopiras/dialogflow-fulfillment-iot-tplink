@@ -84,7 +84,7 @@ you have done, you can test it locally.
 
 You can try your app into your device **if** you are **connected with the same Google account**.
 
-As you probably already know you have to enable Web & App Activity, Device Information, Voice & Audio Activity in the [Activity controls page].
+As you probably already know you have to enable Web & App Activity, Device Information, Voice & Audio Activity in your Google Account [Activity controls page].
 
 Then you also have to be sure that the language of your agent is the same used by your Google assistant.
 
